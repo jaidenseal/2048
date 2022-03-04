@@ -1,37 +1,40 @@
-function Grid(size, previousState) {
-  this.size = size;
-  this.cells = previousState ? this.fromState(previousState) : this.empty();
+function Grid(grid) {
+  this.size = grid.size;
+
+  if (grid.cells) {
+    this.cells = grid.cells;
+    this.rebuild();
+  }
+  else {
+    this.cells = [];
+    this.build();
+  }
 }
 
 // Build a grid of the specified size
-Grid.prototype.empty = function () {
-  var cells = [];
-
+Grid.prototype.build = function () {
   for (var x = 0; x < this.size; x++) {
-    var row = cells[x] = [];
+    var row = this.cells[x] = [];
 
     for (var y = 0; y < this.size; y++) {
       row.push(null);
     }
   }
-
-  return cells;
 };
 
-Grid.prototype.fromState = function (state) {
-  var cells = [];
-
-  for (var x = 0; x < this.size; x++) {
-    var row = cells[x] = [];
-
+Grid.prototype.rebuild = function () {
+  for (x = 0; x < this.size; x ++) {
     for (var y = 0; y < this.size; y++) {
-      var tile = state[x][y];
-      row.push(tile ? new Tile(tile.position, tile.value) : null);
+      var current = this.cells[x][y];
+
+      if (current != null)
+        this.cells[x][y] = new Tile({
+          x:     current.x,
+          y:     current.y
+        }, current.value);
     }
   }
-
-  return cells;
-};
+}
 
 // Find the first available random position
 Grid.prototype.randomAvailableCell = function () {
@@ -97,21 +100,4 @@ Grid.prototype.removeTile = function (tile) {
 Grid.prototype.withinBounds = function (position) {
   return position.x >= 0 && position.x < this.size &&
          position.y >= 0 && position.y < this.size;
-};
-
-Grid.prototype.serialize = function () {
-  var cellState = [];
-
-  for (var x = 0; x < this.size; x++) {
-    var row = cellState[x] = [];
-
-    for (var y = 0; y < this.size; y++) {
-      row.push(this.cells[x][y] ? this.cells[x][y].serialize() : null);
-    }
-  }
-
-  return {
-    size: this.size,
-    cells: cellState
-  };
 };
